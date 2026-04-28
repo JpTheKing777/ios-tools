@@ -10,13 +10,17 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Select Xcode
-        run: sudo xcode-select -s /Applications/Xcode.app
+        run: sudo xcode-select -s /Applications/Xcode_16.4.app
+
+      - name: Show directory structure
+        run: find . -name "*.xcodeproj" -type d
 
       - name: Build
         run: |
           xcodebuild \
-            -project MyApp/MyApp.xcodeproj \
+            -project MyApp.xcodeproj \
             -scheme MyApp \
             -sdk iphonesimulator \
             -configuration Debug \
             build
+        working-directory: MyApp
