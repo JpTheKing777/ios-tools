@@ -33,6 +33,7 @@ jobs:
           mkdir -p build/Payload
           mkdir -p build/output
           cp -r build/MyApp.xcarchive/Products/Applications/MyApp.app build/Payload/MyApp.app
+          chmod +x build/Payload/MyApp.app/MyApp
           cd build
           zip -r --symlinks output/MyApp.ipa Payload
 
