@@ -31,17 +31,10 @@ jobs:
       - name: Export IPA
         run: |
           mkdir -p build/Payload
+          mkdir -p build/output
           cp -r build/MyApp.xcarchive/Products/Applications/MyApp.app build/Payload/MyApp.app
           cd build
-          zip -r --symlinks output.ipa Payload
-          mv output.ipa output/MyApp.ipa
-          mkdir -p output
-          mv output.ipa output/MyApp.ipa
-
-      - name: Verify IPA contents
-        run: |
-          cd build/output
-          unzip -l MyApp.ipa
+          zip -r --symlinks output/MyApp.ipa Payload
 
       - name: Upload IPA
         uses: actions/upload-artifact@v4
