@@ -3,6 +3,9 @@ on:
   push:
     branches: [main]
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   build:
     runs-on: macos-latest
@@ -18,9 +21,8 @@ jobs:
       - name: Build
         run: |
           xcodebuild \
-            -project MyApp.xcodeproj \
+            -project MyApp/MyApp.xcodeproj \
             -scheme MyApp \
             -sdk iphonesimulator \
             -configuration Debug \
             build
-        working-directory: MyApp
