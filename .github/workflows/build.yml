@@ -34,15 +34,9 @@ jobs:
           mkdir -p build/output
           cp -r build/MyApp.xcarchive/Products/Applications/MyApp.app build/Payload/MyApp.app
           chmod +x build/Payload/MyApp.app/MyApp
+          plutil -convert xml1 build/Payload/MyApp.app/Info.plist
           cd build
           zip -r --symlinks output/MyApp.ipa Payload
-
-      - name: Verify IPA
-        run: |
-          cd build/output
-          unzip -l MyApp.ipa
-          echo "---"
-          cat ../Payload/MyApp.app/Info.plist || true
 
       - name: Upload IPA
         uses: actions/upload-artifact@v4
