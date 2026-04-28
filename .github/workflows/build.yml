@@ -28,12 +28,17 @@ jobs:
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGNING_ALLOWED=NO
 
+      - name: Check executable name
+        run: |
+          ls -la build/MyApp.xcarchive/Products/Applications/MyApp.app/
+          plutil -p build/MyApp.xcarchive/Products/Applications/MyApp.app/Info.plist
+
       - name: Export IPA
         run: |
           mkdir -p build/Payload
           mkdir -p build/output
           cp -r build/MyApp.xcarchive/Products/Applications/MyApp.app build/Payload/MyApp.app
-          chmod +x build/Payload/MyApp.app/MyApp
+          chmod -R 755 build/Payload/MyApp.app
           plutil -convert xml1 build/Payload/MyApp.app/Info.plist
           cd build
           zip -r --symlinks output/MyApp.ipa Payload
