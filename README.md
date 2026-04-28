@@ -1,11 +1,22 @@
-# MyApp
-A collection of iOS network and sensor tools.
+name: Build iOS App
+on:
+  push:
+    branches: [main]
 
-## Tools Included
-- Bluetooth Scanner
-- Network Scanner
-- NFC Reader/Writer
-- Sensor Dashboard
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
 
-## Building
-This project uses GitHub Actions to build automatically on push.
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode.app
+
+      - name: Build
+        run: |
+          xcodebuild \
+            -project IO-Tools/MyApp.xcodeproj \
+            -scheme MyApp \
+            -sdk iphonesimulator \
+            -configuration Debug \
+            build
