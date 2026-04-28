@@ -28,16 +28,20 @@ jobs:
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGNING_ALLOWED=NO
 
-      - name: Show archive contents
-        run: find build/MyApp.xcarchive -type f
-
       - name: Export IPA
         run: |
-          mkdir -p build/output/Payload
-          cp -r build/MyApp.xcarchive/Products/Applications/MyApp.app build/output/Payload/MyApp.app
+          mkdir -p build/Payload
+          cp -r build/MyApp.xcarchive/Products/Applications/MyApp.app build/Payload/MyApp.app
+          cd build
+          zip -r --symlinks output.ipa Payload
+          mv output.ipa output/MyApp.ipa
+          mkdir -p output
+          mv output.ipa output/MyApp.ipa
+
+      - name: Verify IPA contents
+        run: |
           cd build/output
-          zip -r MyApp.ipa Payload
-          rm -rf Payload
+          unzip -l MyApp.ipa
 
       - name: Upload IPA
         uses: actions/upload-artifact@v4
