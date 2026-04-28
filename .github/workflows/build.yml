@@ -42,4 +42,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: JaysTools-IOS
-          path: build/output/IOSTool.ipa
+          path: build/output/MyApp.ipa
+          if-no-files-found: error
