@@ -15,5 +15,7 @@
     <true/>
     <key>UILaunchStoryboardName</key>
     <string>LaunchScreen</string>
+    <key>NSLocalNetworkUsageDescription</key>
+<string>This app scans your local network.</string>
 </dict>
 </plist>
