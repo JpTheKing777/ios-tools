@@ -30,13 +30,14 @@ jobs:
 
       - name: Export IPA
         run: |
-          mkdir -p build/output
-          cp -r build/MyApp.xcarchive/Products/Applications/MyApp.app build/output/
+          mkdir -p build/output/Payload
+          cp -r build/MyApp.xcarchive/Products/Applications/MyApp.app build/output/Payload/MyApp.app
           cd build/output
-          mkdir Payload
-          cp -r MyApp.app Payload/
           zip -r MyApp.ipa Payload
-          rm -rf Payload MyApp.app
+          rm -rf Payload
+
+      - name: List build output
+        run: find build/output -type f
 
       - name: Upload IPA
         uses: actions/upload-artifact@v4
