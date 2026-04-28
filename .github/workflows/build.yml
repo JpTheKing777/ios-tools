@@ -15,11 +15,31 @@ jobs:
       - name: Select Xcode
         run: sudo xcode-select -s /Applications/Xcode_16.4.app
 
-      - name: Build
+      - name: Build archive
         run: |
           xcodebuild \
             -project IO-Tools/MyApp.xcodeproj \
             -scheme MyApp \
-            -sdk iphonesimulator \
-            -configuration Debug \
-            build
+            -sdk iphoneos \
+            -configuration Release \
+            -archivePath build/MyApp.xcarchive \
+            archive \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO
+
+      - name: Export IPA
+        run: |
+          mkdir -p build/output
+          cp -r build/MyApp.xcarchive/Products/Applications/MyApp.app build/output/
+          cd build/output
+          mkdir Payload
+          cp -r MyApp.app Payload/
+          zip -r MyApp.ipa Payload
+          rm -rf Payload MyApp.app
+
+      - name: Upload IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: JaysTools-IOS
+          path: build/output/IOSTool.ipa

@@ -4,9 +4,9 @@
 <plist version="1.0">
 <dict>
     <key>CFBundleName</key>
-    <string>MyApp</string>
+    <string>Jay'sTools-IOS</string>
     <key>CFBundleIdentifier</key>
-    <string>com.yourname.myapp</string>
+    <string>com.jays.jaysiostools</string>
     <key>CFBundleVersion</key>
     <string>1</string>
     <key>CFBundleShortVersionString</key>
