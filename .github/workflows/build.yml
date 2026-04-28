@@ -37,6 +37,13 @@ jobs:
           cd build
           zip -r --symlinks output/MyApp.ipa Payload
 
+      - name: Verify IPA
+        run: |
+          cd build/output
+          unzip -l MyApp.ipa
+          echo "---"
+          cat ../Payload/MyApp.app/Info.plist || true
+
       - name: Upload IPA
         uses: actions/upload-artifact@v4
         with:
