@@ -15,7 +15,7 @@ class AIChat: ObservableObject {
     private let monitor = NWPathMonitor()
     private var networkStatus = "Unknown"
     private var accelX = 0.0, accelY = 0.0, accelZ = 0.0
-    let apiKey = "YOUR_API_KEY_HERE"
+    let apiKey = "YOUR_GROQ_KEY_HERE"
 
     init() {
         startSensors()
@@ -54,22 +54,25 @@ class AIChat: ObservableObject {
         Answer questions about this data or anything else the user asks. Be concise and friendly.
         """
 
+        var allMessages: [[String: Any]] = [
+            ["role": "system", "content": systemPrompt]
+        ]
+        allMessages += messages.map { ["role": $0.role, "content": $0.content] }
+
         let body: [String: Any] = [
-            "model": "claude-sonnet-4-5",
+            "model": "llama-3.3-70b-versatile",
             "max_tokens": 1000,
-            "system": systemPrompt,
-            "messages": messages.map { ["role": $0.role, "content": $0.content] }
+            "messages": allMessages
         ]
 
-        guard let url = URL(string: "https://api.anthropic.com/v1/messages"),
+        guard let url = URL(string: "https://api.groq.com/openai/v1/chat/completions"),
               let jsonData = try? JSONSerialization.data(withJSONObject: body) else { return }
 
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.httpBody = jsonData
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.setValue("2023-06-01", forHTTPHeaderField: "anthropic-version")
-        request.setValue(apiKey, forHTTPHeaderField: "x-api-key")
+        request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
 
         URLSession.shared.dataTask(with: request) { data, _, _ in
             DispatchQueue.main.async {
@@ -80,8 +83,9 @@ class AIChat: ObservableObject {
                 }
                 let rawResponse = String(data: data, encoding: .utf8) ?? "unreadable"
                 guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-                      let content = json["content"] as? [[String: Any]],
-                      let text = content.first?["text"] as? String else {
+                      let choices = json["choices"] as? [[String: Any]],
+                      let message = choices.first?["message"] as? [String: Any],
+                      let text = message["content"] as? String else {
                     self.messages.append(Message(role: "assistant", content: "Error: \(rawResponse)"))
                     return
                 }
