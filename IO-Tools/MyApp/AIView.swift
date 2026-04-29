@@ -55,7 +55,7 @@ class AIChat: ObservableObject {
         """
 
         let body: [String: Any] = [
-            "model": "claude-sonnet-4-20250514",
+            "model": "claude-sonnet-4-5",
             "max_tokens": 1000,
             "system": systemPrompt,
             "messages": messages.map { ["role": $0.role, "content": $0.content] }
@@ -74,11 +74,15 @@ class AIChat: ObservableObject {
         URLSession.shared.dataTask(with: request) { data, _, _ in
             DispatchQueue.main.async {
                 self.isLoading = false
-                guard let data = data,
-                      let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+                guard let data = data else {
+                    self.messages.append(Message(role: "assistant", content: "Error: No data received."))
+                    return
+                }
+                let rawResponse = String(data: data, encoding: .utf8) ?? "unreadable"
+                guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
                       let content = json["content"] as? [[String: Any]],
                       let text = content.first?["text"] as? String else {
-                    self.messages.append(Message(role: "assistant", content: "Error getting response."))
+                    self.messages.append(Message(role: "assistant", content: "Error: \(rawResponse)"))
                     return
                 }
                 self.messages.append(Message(role: "assistant", content: text))
