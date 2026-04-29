@@ -15,6 +15,7 @@ class AIChat: ObservableObject {
     private let monitor = NWPathMonitor()
     private var networkStatus = "Unknown"
     private var accelX = 0.0, accelY = 0.0, accelZ = 0.0
+    let apiKey = "YOUR_API_KEY_HERE"
 
     init() {
         startSensors()
@@ -68,6 +69,7 @@ class AIChat: ObservableObject {
         request.httpBody = jsonData
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.setValue("2023-06-01", forHTTPHeaderField: "anthropic-version")
+        request.setValue(apiKey, forHTTPHeaderField: "x-api-key")
 
         URLSession.shared.dataTask(with: request) { data, _, _ in
             DispatchQueue.main.async {
@@ -88,6 +90,7 @@ class AIChat: ObservableObject {
 struct AIView: View {
     @StateObject var chat = AIChat()
     @State private var input = ""
+    @FocusState private var isFocused: Bool
 
     var body: some View {
         NavigationView {
@@ -120,6 +123,9 @@ struct AIView: View {
                         }
                         .padding()
                     }
+                    .onTapGesture {
+                        isFocused = false
+                    }
                     .onChange(of: chat.messages.count) { _ in
                         if let last = chat.messages.last {
                             proxy.scrollTo(last.id, anchor: .bottom)
@@ -130,6 +136,8 @@ struct AIView: View {
                 HStack {
                     TextField("Ask about your device data...", text: $input)
                         .textFieldStyle(RoundedBorderTextFieldStyle())
+                        .focused($isFocused)
+                        .submitLabel(.send)
                         .onSubmit { send() }
                     Button(action: send) {
                         Image(systemName: "arrow.up.circle.fill")
@@ -141,6 +149,14 @@ struct AIView: View {
                 .padding()
             }
             .navigationTitle("AI Assistant")
+            .toolbar {
+                ToolbarItemGroup(placement: .keyboard) {
+                    Spacer()
+                    Button("Done") {
+                        isFocused = false
+                    }
+                }
+            }
         }
     }
 
@@ -148,6 +164,7 @@ struct AIView: View {
         guard !input.isEmpty else { return }
         let text = input
         input = ""
+        isFocused = false
         chat.sendMessage(text)
     }
 }

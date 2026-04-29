@@ -15,6 +15,12 @@ jobs:
       - name: Select Xcode
         run: sudo xcode-select -s /Applications/Xcode_16.4.app
 
+      - name: Inject API Key
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          sed -i '' "s/YOUR_API_KEY_HERE/$ANTHROPIC_API_KEY/g" IO-Tools/MyApp/AIView.swift
+
       - name: Build archive
         run: |
           xcodebuild \
