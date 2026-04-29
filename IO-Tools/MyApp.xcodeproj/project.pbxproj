@@ -12,6 +12,7 @@
 		A1000003 /* SensorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000003 /* SensorView.swift */; };
 		A1000004 /* BluetoothView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000004 /* BluetoothView.swift */; };
 		A1000005 /* NetworkView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000005 /* NetworkView.swift */; };
+		A1000006 /* AIView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000006 /* AIView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -20,7 +21,7 @@
 		A2000003 /* SensorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SensorView.swift; sourceTree = "<group>"; };
 		A2000004 /* BluetoothView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BluetoothView.swift; sourceTree = "<group>"; };
 		A2000005 /* NetworkView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkView.swift; sourceTree = "<group>"; };
-		A2000006 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		A2000006 /* AIView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIView.swift; sourceTree = "<group>"; };
 		A3000001 /* MyApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MyApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -41,7 +42,7 @@
 				A2000003 /* SensorView.swift */,
 				A2000004 /* BluetoothView.swift */,
 				A2000005 /* NetworkView.swift */,
-				A2000006 /* Info.plist */,
+				A2000006 /* AIView.swift */,
 			);
 			path = MyApp;
 			sourceTree = "<group>";
@@ -105,6 +106,7 @@
 				A1000003 /* SensorView.swift in Sources */,
 				A1000004 /* BluetoothView.swift in Sources */,
 				A1000005 /* NetworkView.swift in Sources */,
+				A1000006 /* AIView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -118,8 +120,8 @@
 				CLANG_ENABLE_MODULES = YES;
 				SWIFT_VERSION = 5.0;
 				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.yourname.myapp";
-				PRODUCT_NAME = "Jay'sTools-IOS";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.jays.jaysiostools";
+				PRODUCT_NAME = "$(TARGET_NAME)";
 				INFOPLIST_FILE = "MyApp/Info.plist";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 			};
@@ -132,7 +134,7 @@
 				CLANG_ENABLE_MODULES = YES;
 				SWIFT_VERSION = 5.0;
 				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.yourname.myapp";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.jays.jaysiostools";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				INFOPLIST_FILE = "MyApp/Info.plist";
 				SWIFT_EMIT_LOC_STRINGS = YES;

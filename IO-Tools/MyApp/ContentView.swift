@@ -15,6 +15,10 @@ struct ContentView: View {
                 .tabItem {
                     Label("Network", systemImage: "wifi")
                 }
+            AIView()
+                .tabItem {
+                    Label("AI", systemImage: "brain")
+                }
         }
     }
 }
