@@ -1,20 +1,19 @@
-import SwiftUI
-import CoreMotion
-import Network
-
-struct Message: Identifiable {
-    let id = UUID()
-    let role: String
-    let content: String
-}
-
 class AIChat: ObservableObject {
     @Published var messages: [Message] = []
     @Published var isLoading = false
     private let motion = CMMotionManager()
     private let monitor = NWPathMonitor()
     private var networkStatus = "Unknown"
+    private var isWifi = false
+    private var isCellular = false
+    private var isExpensive = false
+    private var ipv4 = false
+    private var ipv6 = false
     private var accelX = 0.0, accelY = 0.0, accelZ = 0.0
+    private var gyroX = 0.0, gyroY = 0.0, gyroZ = 0.0
+    private var magnetX = 0.0, magnetY = 0.0, magnetZ = 0.0
+    private var pitch = 0.0, roll = 0.0, yaw = 0.0
+    private var pressure = 0.0
     let apiKey = "YOUR_GROQ_KEY_HERE"
 
     init() {
@@ -22,6 +21,7 @@ class AIChat: ObservableObject {
     }
 
     func startSensors() {
+        // Accelerometer
         if motion.isAccelerometerAvailable {
             motion.accelerometerUpdateInterval = 0.5
             motion.startAccelerometerUpdates(to: .main) { data, _ in
@@ -31,8 +31,54 @@ class AIChat: ObservableObject {
                 self.accelZ = data.acceleration.z
             }
         }
+        // Gyroscope
+        if motion.isGyroAvailable {
+            motion.gyroUpdateInterval = 0.5
+            motion.startGyroUpdates(to: .main) { data, _ in
+                guard let data = data else { return }
+                self.gyroX = data.rotationRate.x
+                self.gyroY = data.rotationRate.y
+                self.gyroZ = data.rotationRate.z
+            }
+        }
+        // Magnetometer
+        if motion.isMagnetometerAvailable {
+            motion.magnetometerUpdateInterval = 0.5
+            motion.startMagnetometerUpdates(to: .main) { data, _ in
+                guard let data = data else { return }
+                self.magnetX = data.magneticField.x
+                self.magnetY = data.magneticField.y
+                self.magnetZ = data.magneticField.z
+            }
+        }
+        // Device motion (pitch, roll, yaw)
+        if motion.isDeviceMotionAvailable {
+            motion.deviceMotionUpdateInterval = 0.5
+            motion.startDeviceMotionUpdates(to: .main) { data, _ in
+                guard let data = data else { return }
+                self.pitch = data.attitude.pitch
+                self.roll = data.attitude.roll
+                self.yaw = data.attitude.yaw
+            }
+        }
+        // Altimeter/Barometer
+        if #available(iOS 15.0, *) {
+            let altimeter = CMAltimeter()
+            if CMAltimeter.isRelativeAltitudeAvailable() {
+                altimeter.startRelativeAltitudeUpdates(to: .main) { data, _ in
+                    guard let data = data else { return }
+                    self.pressure = data.pressure.doubleValue
+                }
+            }
+        }
+        // Network
         monitor.pathUpdateHandler = { path in
             self.networkStatus = path.status == .satisfied ? "Connected" : "Disconnected"
+            self.isWifi = path.usesInterfaceType(.wifi)
+            self.isCellular = path.usesInterfaceType(.cellular)
+            self.isExpensive = path.isExpensive
+            self.ipv4 = path.supportsIPv4
+            self.ipv6 = path.supportsIPv6
         }
         monitor.start(queue: DispatchQueue.global())
     }
@@ -42,16 +88,47 @@ class AIChat: ObservableObject {
         isLoading = true
 
         let sensorContext = """
-        Current device sensor data:
-        - Accelerometer: X=\(String(format: "%.3f", accelX)), Y=\(String(format: "%.3f", accelY)), Z=\(String(format: "%.3f", accelZ))
-        - Network Status: \(networkStatus)
+        Live device data from Jay'sTools-IOS:
+
+        ACCELEROMETER:
+        - X: \(String(format: "%.4f", accelX)) g
+        - Y: \(String(format: "%.4f", accelY)) g
+        - Z: \(String(format: "%.4f", accelZ)) g
+
+        GYROSCOPE:
+        - X: \(String(format: "%.4f", gyroX)) rad/s
+        - Y: \(String(format: "%.4f", gyroY)) rad/s
+        - Z: \(String(format: "%.4f", gyroZ)) rad/s
+
+        MAGNETOMETER:
+        - X: \(String(format: "%.2f", magnetX)) µT
+        - Y: \(String(format: "%.2f", magnetY)) µT
+        - Z: \(String(format: "%.2f", magnetZ)) µT
+
+        DEVICE ORIENTATION:
+        - Pitch: \(String(format: "%.4f", pitch)) rad
+        - Roll: \(String(format: "%.4f", roll)) rad
+        - Yaw: \(String(format: "%.4f", yaw)) rad
+
+        BAROMETER:
+        - Pressure: \(String(format: "%.2f", pressure)) kPa
+
+        NETWORK:
+        - Status: \(networkStatus)
+        - Wi-Fi: \(isWifi ? "Yes" : "No")
+        - Cellular: \(isCellular ? "Yes" : "No")
+        - Expensive connection: \(isExpensive ? "Yes" : "No")
+        - IPv4: \(ipv4 ? "Supported" : "No")
+        - IPv6: \(ipv6 ? "Supported" : "No")
         """
 
         let systemPrompt = """
         You are a helpful assistant built into an iOS tools app called Jay'sTools-IOS.
-        You have access to the user's live device sensor data:
+        You have access to the user's live device sensor data updated every 0.5 seconds:
         \(sensorContext)
-        Answer questions about this data or anything else the user asks. Be concise and friendly.
+        Answer questions about this data or anything else the user asks.
+        When asked about sensor data, explain what the values mean in plain English.
+        Be concise and friendly.
         """
 
         var allMessages: [[String: Any]] = [
@@ -92,87 +169,5 @@ class AIChat: ObservableObject {
                 self.messages.append(Message(role: "assistant", content: text))
             }
         }.resume()
-    }
-}
-
-struct AIView: View {
-    @StateObject var chat = AIChat()
-    @State private var input = ""
-    @FocusState private var isFocused: Bool
-
-    var body: some View {
-        NavigationView {
-            VStack {
-                ScrollViewReader { proxy in
-                    ScrollView {
-                        LazyVStack(alignment: .leading, spacing: 12) {
-                            ForEach(chat.messages) { message in
-                                HStack {
-                                    if message.role == "user" { Spacer() }
-                                    Text(message.content)
-                                        .padding(12)
-                                        .background(message.role == "user" ? Color.blue : Color(.systemGray5))
-                                        .foregroundColor(message.role == "user" ? .white : .primary)
-                                        .cornerRadius(16)
-                                        .frame(maxWidth: 280, alignment: message.role == "user" ? .trailing : .leading)
-                                    if message.role == "assistant" { Spacer() }
-                                }
-                                .id(message.id)
-                            }
-                            if chat.isLoading {
-                                HStack {
-                                    ProgressView()
-                                        .padding(12)
-                                        .background(Color(.systemGray5))
-                                        .cornerRadius(16)
-                                    Spacer()
-                                }
-                            }
-                        }
-                        .padding()
-                    }
-                    .onTapGesture {
-                        isFocused = false
-                    }
-                    .onChange(of: chat.messages.count) { _ in
-                        if let last = chat.messages.last {
-                            proxy.scrollTo(last.id, anchor: .bottom)
-                        }
-                    }
-                }
-
-                HStack {
-                    TextField("Ask about your device data...", text: $input)
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
-                        .focused($isFocused)
-                        .submitLabel(.send)
-                        .onSubmit { send() }
-                    Button(action: send) {
-                        Image(systemName: "arrow.up.circle.fill")
-                            .font(.system(size: 32))
-                            .foregroundColor(input.isEmpty ? .gray : .blue)
-                    }
-                    .disabled(input.isEmpty || chat.isLoading)
-                }
-                .padding()
-            }
-            .navigationTitle("AI Assistant")
-            .toolbar {
-                ToolbarItemGroup(placement: .keyboard) {
-                    Spacer()
-                    Button("Done") {
-                        isFocused = false
-                    }
-                }
-            }
-        }
-    }
-
-    func send() {
-        guard !input.isEmpty else { return }
-        let text = input
-        input = ""
-        isFocused = false
-        chat.sendMessage(text)
     }
 }
